@@ -1,0 +1,27 @@
+name: Docker CI (GitHub Actions)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: docker build -t hellodevops:actions .
+
+      - name: Deploy (run container)
+        run: |
+          mkdir -p ${{ github.workspace }}/data
+          docker rm -f hellodevops-actions || true
+          docker run -d --name hellodevops-actions -v ${{ github.workspace }}/data:/app/data hellodevops:actions
+
+      - name: Verify
+        run: |
+          sleep 2
+          docker logs hellodevops-actions
+          cat ${{ github.workspace }}/data/log.txt
